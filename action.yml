@@ -5,7 +5,9 @@ inputs:
   tag_name:
     description: "Name of the tag to create or update"
     required: true
-
+  ref:
+    description: "Commit SHA, branch name, or tag name to create the tag from"
+    required: false
 runs:
   using: "node20"
   main: "dist/main.js"
