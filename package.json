@@ -6,7 +6,7 @@
   "author": "Richard Simko <1245031+richardsimko@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "ncc build src/main.ts -o dist --target es2022 -s -m",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -17,6 +17,7 @@
     "@types/node": "^20.10.5",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
+    "@vercel/ncc": "0.38.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.2",
