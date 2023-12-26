@@ -29,7 +29,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODE_VERSION}}
-          cache: 'yarn'
       - id: update-version
         shell: bash
         name: Update package.json version
@@ -45,17 +44,35 @@ jobs:
           branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
       - name: Checkout release branch
         shell: bash
         run: |
           git checkout -b release/${{steps.update-version.outputs.version}}
           git push origin release/${{steps.update-version.outputs.version}}
       - name: Install
-        run: yarn install --frozen-lockfile
+        run: pnpm i 
       - name: Build
-        run: yarn run build
+        run: pnpm run build
       - name: Install prod dependencies
-        run: rm -rf node_modules && yarn install --production --frozen-lockfile
+        run: rm -rf node_modules && pnpm install --production
       - name: Add node_modules and dist
         shell: bash
         run: |
