@@ -13,9 +13,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODE_VERSION}}
-          cache: 'yarn'
       - name: Update test tag
-        uses: greenhat616/update-tag@main
+        uses: greenhat616/update-tag@v1
         with:
           tag_name: test-released-version
         env:
