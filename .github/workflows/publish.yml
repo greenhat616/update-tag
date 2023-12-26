@@ -71,9 +71,7 @@ jobs:
         run: pnpm i 
       - name: Build
         run: pnpm run build
-      - name: Install prod dependencies
-        run: rm -rf node_modules && pnpm install --production
-      - name: Add node_modules and dist
+      - name: Add dist
         shell: bash
         run: |
           git add --force dist/
@@ -85,6 +83,11 @@ jobs:
           branch: release/${{steps.update-version.outputs.version}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout new tag
+        uses: actions/checkout@v4
+        with:
+          ref: release/${{steps.update-version.outputs.version}}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Create tag
         id: tag
         shell: bash
