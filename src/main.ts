@@ -23,8 +23,15 @@ async function run() {
 
     const octokit = github.getOctokit(GITHUB_TOKEN);
 
-    const commitSha = await getCommitSha(ref, octokit);
-    if (!commitSha) {
+    let commitSha: string;
+
+    try {
+      commitSha = await getCommitSha(ref, octokit);
+      if (!commitSha) {
+        return;
+      }
+    } catch (e) {
+      core.setFailed(e.message);
       return;
     }
 
@@ -63,12 +70,13 @@ async function run() {
 }
 
 async function getCommitSha(ref: string, octokit: ReturnType<typeof github.getOctokit>): Promise<string> {
+  if (ref.length === 40) {
+    console.log(`👍 Ref is a commit hash.`);
+    return ref;
+  }
+  console.log(`🤠 Checking ref: ${ref}...`);
+
   try {
-    if (ref.length === 40) {
-      console.log(`👍 Ref is a commit hash.`);
-      return ref;
-    }
-    console.log(`🤠 Checking ref: ${ref}...`);
     const defaultRef = await octokit.rest.git.getRef({
       ...github.context.repo,
       ref: ref,
@@ -76,7 +84,15 @@ async function getCommitSha(ref: string, octokit: ReturnType<typeof github.getOc
     if (defaultRef.data.object) {
       return defaultRef.data.object.sha;
     }
-    console.log(`😕 Ref ${ref} does not exist. Try to query as a branch...`);
+  } catch (e) {
+    if (e.status === 404) {
+      console.log(`😕 Ref ${ref} does not exist. Try to query as a branch...`);
+    } else {
+      throw e;
+    }
+  }
+
+  try {
     const branchRef = await octokit.rest.git.getRef({
       ...github.context.repo,
       ref: `heads/${ref}`,
@@ -84,7 +100,15 @@ async function getCommitSha(ref: string, octokit: ReturnType<typeof github.getOc
     if (branchRef.data.object) {
       return branchRef.data.object.sha;
     }
-    console.log(`😕 Branch ${ref} does not exist. Try to query as a tag...`);
+  } catch (e) {
+    if (e.status === 404) {
+      console.log(`😕 Branch ${ref} does not exist. Try to query as a tag...`);
+    } else {
+      throw e;
+    }
+  }
+
+  try {
     const tagRef = await octokit.rest.git.getRef({
       ...github.context.repo,
       ref: `tags/${ref}`,
@@ -92,9 +116,12 @@ async function getCommitSha(ref: string, octokit: ReturnType<typeof github.getOc
     if (tagRef.data.object) {
       return tagRef.data.object.sha;
     }
-    core.setFailed(`😨 Ref ${ref} does not exist.`);
   } catch (e) {
-    core.setFailed(e.message || e);
+    if (e.status === 404) {
+      core.setFailed(`😨 Ref ${ref} does not exist.`);
+    } else {
+      throw e;
+    }
   }
   return '';
 }
