@@ -64,7 +64,11 @@ async function run() {
 
 async function getCommitSha(ref: string, octokit: ReturnType<typeof github.getOctokit>): Promise<string> {
   try {
-    console.log(`🤠 Checking ref: ${ref}.`);
+    if (ref.length === 40) {
+      console.log(`👍 Ref is a commit hash.`);
+      return ref;
+    }
+    console.log(`🤠 Checking ref: ${ref}...`);
     const defaultRef = await octokit.rest.git.getRef({
       ...github.context.repo,
       ref: ref,
