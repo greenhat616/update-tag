@@ -14,8 +14,29 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION}}
       - name: Update test tag
-        uses: richardsimko/update-tag@v1
+        uses: greenhat616/update-tag@v1
         with:
           tag_name: test-released-version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update test tag with sha1
+        uses: greenhat616/update-tag@v1
+        with:
+          tag_name: test-released-version-sha
+          ref: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update test tag with tag
+        uses: greenhat616/update-tag@v1
+        with:
+          tag_name: test-released-version-tag
+          ref: 'v1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update test tag with branch
+        uses: greenhat616/update-tag@v1
+        with:
+          tag_name: test-released-version-branch
+          ref: 'main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
